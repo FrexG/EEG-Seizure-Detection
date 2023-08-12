@@ -121,4 +121,4 @@ if __name__ == "__main__":
     with open(testing_data_path, "r") as f:
         testing_data = json.load(f)
 
-    train_xgb(training_data, testing_data, lr=1e-3, window=30)
+    train_xgb(training_data, testing_data, lr=1e-3, window=20)
