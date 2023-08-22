@@ -5,7 +5,7 @@ For training the xgboost and random forest models, i used `7` set of features pe
 1) The sum of the power spectral density values for `alpha`,`beta`,`delta`,`gamma`,and `theta` componets of the frequency domain.
 2) The `mean` and `std` of the signals in each channel in the time domain.
 This performed for each window and channel independently.
-We now have $[C,7]$ input vectors and $[C,]4 label vectors for each `T` second windows.
+We now have $[C,7]$ input vectors and $[C,]$ label vectors for each `T` second windows.
 
 We can match the `sensitivity(recall)` values published [here](https://sci-hub.se/https://ieeexplore.ieee.org/document/9353625), but it has poor `specifity` or false-alarm rate.
 
