@@ -21,19 +21,10 @@ class XGBLoader:
         }
 
         self.sample_freq = annotation["s_freq"]  # sampleing freqeuncy
-        default_channel_nums = 22
         montage = annotation["montage"]
-        # resample EEG to a fixed sampling frequency.
-        # resampler = torchaudio.transforms.Resample(sample_freq, new_s_freq)
 
         with np.load(annotation["npz_filepath"]) as npz_file:
             raw_eeg = npz_file["arr_0"]
-
-            # if montage not in ["01_tcp_ar", "02_tcp_le"]:
-            # zero_eeg = np.zeros((default_channel_nums, raw_eeg.shape[-1]))
-            # zero_eeg[0 : raw_eeg.shape[0], ...] = raw_eeg
-
-            # raw_eeg = zero_eeg
 
         self.x, self.y = self.create_window(raw_eeg, self.annotation["channel_annot"])
 
@@ -57,12 +48,12 @@ class XGBLoader:
         s_fre (int): sampling frequency.
         window_size: window_size in seconds.
         """
-        context_length = (
-            self.window_size * self.sample_freq  # self.new_s_freq
-        )  # change window_size(seconds) to sequence_lenth
+        context_length = self.window_size * self.sample_freq
+        # change window_size(seconds) to sequence_lenth
         sample_length = eeg_sample.shape[-1]  # total length of the raw eeg signal
 
         # pad the `eeg_sample` to the nearest integer factor of `window_size`
+        # will not change the signal if window_size = 1.
         padding_size = int(context_length * np.ceil(sample_length / context_length))
 
         padded_zero = np.zeros((eeg_sample.shape[0], padding_size))
@@ -105,15 +96,21 @@ class XGBLoader:
 
         x = self.x[self.idx]
 
-        x_mean = np.expand_dims(x.mean(axis=-1), axis=-1)
-        x_std = np.expand_dims(x.std(axis=-1), axis=-1)
+        # find the mean and std of amplitude values in time domain
+        x_mean_t = np.expand_dims(x.mean(axis=-1), axis=-1)
+        x_std_t = np.expand_dims(x.std(axis=-1), axis=-1)
 
         x = self._fft(x)
+        # find the mean and std of frequency values in frequency domain
+        x_mean_f = np.expand_dims(x.mean(axis=-1), axis=-1)
+        x_std_f = np.expand_dims(x.std(axis=-1), axis=-1)
+
         features = []
+
         for name, freq_range in self.freq_range.items():
             psd = self._psd_extract(x[..., freq_range[0] : freq_range[1]])
             # sum the power values
-            psd = psd.sum(axis=-1)
+            psd = psd.mean(axis=-1)
             features.append(psd)
 
         features = np.array(features)
@@ -122,14 +119,10 @@ class XGBLoader:
         self.scaler.fit(features)
         features = self.scaler.transform(features)
 
-        features = np.concatenate([features, x_mean, x_std], axis=-1)
+        features = np.concatenate(
+            [features, x_mean_t, x_std_t, x_mean_f, x_std_f], axis=-1
+        )
 
-        # x = self._psd_extract(x)
         y = self.y[self.idx]
-
-        """ if torch.all(y):
-            idx = random.randint(0, len(y) - 1)
-            x[idx, ...] = torch.zeros(x.shape[-1])
-            y[idx] = 0.0 """
         self.idx += 1
         return features, y
