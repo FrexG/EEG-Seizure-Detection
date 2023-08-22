@@ -1,5 +1,5 @@
 bipolar_eeg_dataset
-utils/*.joblib
-utils/*.json
-xgb_checkpoints/*.json
-rf_checkpoints/*.joblib
+ml/*.joblib
+ml/*.json
+ml/xgb_checkpoints/*.json
+ml/rf_checkpoints/*.joblib

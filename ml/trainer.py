@@ -88,7 +88,7 @@ def train_xgb(lr=0.01, max_depth=6, n_estimator=200):
     xgb_clf.fit(x_train_np, y_train_np, verbose=True)
     # save the model
     print("Saving model")
-    xgb_clf.save_model(f"xgb_model_n_{n_estimator}_lr_{lr}.json")
+    xgb_clf.save_model(f"xgb_checkpoints/xgb_model_n_{n_estimator}_lr_{lr}.json")
 
     print(f"Score on training set: ")
     preds = xgb_clf.predict(x_train_np)
@@ -103,12 +103,6 @@ def train_xgb(lr=0.01, max_depth=6, n_estimator=200):
     print(
         f"\tAcc = {scores[0]}\n\tRecall = {scores[1]}\n\tF1 = {scores[2]}\n\tPrecision = {scores[3]}"
     )
-
-    """ 
-    test_scores_dict = dict(zip(("acc", "recall", "f1"), scores))
-
-    with open("test_scores.json", "w") as f:
-        json.dump(test_scores_dict, f) """
 
 
 def score_xg(y, preds):
@@ -135,7 +129,7 @@ def train_rf(n_estimators: int = 1000):
         f"\tAcc = {scores[0]}\n\tRecall = {scores[1]}\n\tF1 = {scores[2]}\n\tPrecision = {scores[3]}"
     )
     # save the trained RF model
-    joblib.dump(clf, f"random_forest_est_{n_estimators}.joblib")
+    joblib.dump(clf, f"rf_checkpoints/random_forest_est_{n_estimators}.joblib")
 
 
 if __name__ == "__main__":
@@ -161,8 +155,9 @@ if __name__ == "__main__":
     # train xgboost
     print("#" * 50)
     print("Training XGBoost")
-    train_xgb(lr=0.001, max_depth=10, n_estimator=1000)
+    train_xgb(lr=0.01, max_depth=10, n_estimator=300)
     print("#" * 50)
+    # train random forest
     print("Training Random forest")
-    train_rf(1000)
+    train_rf(500)
     print("#" * 50)
