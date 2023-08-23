@@ -115,7 +115,7 @@ def score_xg(y, preds):
 
 
 def train_rf(n_estimators: int = 1000):
-    clf = RandomForestClassifier(n_estimators, n_jobs=-1, max_depth=15, verbose=1)
+    clf = RandomForestClassifier(n_estimators, n_jobs=-1, max_depth=10, verbose=1)
     clf.fit(x_train_np, y_train_np)
 
     preds = clf.predict(x_train_np)
